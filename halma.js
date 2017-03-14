@@ -176,7 +176,7 @@ function drawPiece(p, selected) {
 if (typeof resumeGame != "function") {
     saveGameState = function() {
         return false;
-    }
+    };
     resumeGame = function() {
         return false;
     }
@@ -206,7 +206,7 @@ function endGame() {
 }
 
 function initGame(canvasElement, moveCountElement) {
-    
+
     if (!canvasElement) {
         canvasElement = document.createElement("canvas");
         canvasElement.id = "halma_canvas";

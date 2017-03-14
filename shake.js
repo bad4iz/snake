@@ -71,4 +71,147 @@
 //     // ctx.clearRect(0, 0, canvas.width, canvas.height);
 // })();
 
+let conf = {
+    POINT: 10, // in pix
+    FIELD_WIDTH: 300, // in point
+    FIELD_HEIGHT: 200, // in point
 
+    LEFT: 37,
+    UP: 38,
+    RIGHT: 39,
+    DOWN: 40,
+
+    START_DIRECTION: this.RIGHT,
+    DEFAULT_COLOR: "222",
+    FOOD_COLOR: "#423",
+    START_SNAKE_X: 10,
+    START_SNAKE_Y: 10,
+    START_SNAKE_SIZE: 6,
+
+
+    GAME_OVER: false
+};
+
+
+// создаем холст
+class Canvas {
+    constructor() {
+        this.canvasElement = document.createElement("canvas");
+        this.canvasElement.id = "snake_canvas";
+        document.body.appendChild(this.canvasElement);
+        this.canvasElement.width = conf.FIELD_WIDTH * conf.POINT + conf.POINT;
+        this.canvasElement.height = conf.FIELD_HEIGHT * conf.POINT + conf.POINT;
+    }
+
+    context(context) {
+        return this.canvasElement.getContext(context);
+
+    }
+}
+
+
+class GameSnake {
+    constructor() {
+
+        // const START_LOCATION = 200;
+
+        // const SHOW_DELAY = 150;
+
+    }
+
+    go() {
+        addEventListener("keydown", function (event) {
+            console.log(event.keyCode);
+        });
+        let canvas = new Canvas();
+        let ctx = canvas.context('2d');
+
+        let snake = new Snake(conf.START_SNAKE_X, conf.START_SNAKE_Y, conf.START_SNAKE_SIZE, conf.START_DIRECTION);
+        snake.paint(ctx);
+
+        setInterval( ()=> {
+                snake.move();
+            snake.paint(ctx);
+
+        }, 1000)
+
+    }
+}
+
+class Point {
+    constructor(xq, yq) {
+        this.setXY(xq, yq);
+        this.color = conf.DEFAULT_COLOR;
+    }
+
+    paint(graphics) {
+        graphics.beginPath();
+        graphics.fillStyle = this.color;
+        graphics.fillRect(this.x, this.y, conf.POINT, conf.POINT);
+        graphics.beginPath();
+    }
+
+    set y(variable) {
+        this._y = variable * conf.POINT;
+    }
+
+    set x(variable) {
+        this._x = variable * conf.POINT;
+    }
+
+    get x() {
+        return this._x;
+    }
+
+    get y() {
+        return this._y;
+    }
+
+    setXY(xq, yq) {
+        this.x = xq;
+        this.y = yq;
+    }
+
+    // clear(graphics){
+    //     graphics.clear(this.x, this.y, conf.POINT, conf.POINT);
+    // }
+}
+
+class Snake {
+    constructor(x, y, length, direction) {
+        let i;
+        this.length = length;
+        this.snake = [];
+        for (i = 0; i < this.length; i += 1) {
+            let point = new Point(x - i, y);
+            this.snake.push(point);
+        }
+        this.direction = direction;
+    }
+
+    paint(graphics) {
+        this.snake.forEach((point) => point.paint(graphics))
+    }
+
+    move() {
+        let x = this.snake[0].x;
+        let y = this.snake[0].y;
+        // if (this.direction == conf.LEFT) { x--; }
+        // if (this.direction == conf.RIGHT) { x++; }
+        // if (this.direction == conf.UP) { y--; }
+        // if (this.direction == conf.DOWN) { y++; }
+        x++;
+        this.snake.push(new Point(x, y));
+        console.log('move sdfasdfsdf' + x);
+    }
+}
+
+class Food extends Point {
+    constructor() {
+        super(-1, -1);
+        this.color = conf.FOOD_COLOR;
+    }
+}
+
+
+new GameSnake().go();

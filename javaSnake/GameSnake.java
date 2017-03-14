@@ -72,6 +72,7 @@ public class GameSnake {
     }
 
     class Snake {
+
         ArrayList<Point> snake = new ArrayList<Point>();
         int direction;
 
