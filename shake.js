@@ -125,7 +125,7 @@ class GameSnake {
         });
         while (!conf.GAME_OVER) {
             console.log("sdfs");
-            setTimeout(() => {
+            setInterval(() => {
 
                 snake.move(ctx);
 
@@ -134,8 +134,12 @@ class GameSnake {
                     poison.next(ctx);
                 }
 
-            }, conf.SHOW_DELAY);
+            }, conf.SHOW_DELAY+100);
+        // function sleep(ms) {
+        //     ms += new Date().getTime();
+        //     while (new Date() < ms){}
         }
+
     }
 }
 
