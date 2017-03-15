@@ -74,7 +74,7 @@
 let conf = {
     POINT: 10, // in pix
     FIELD_WIDTH: 100, // in point
-    FIELD_HEIGHT: 50, // in point
+    FIELD_HEIGHT: 30, // in point
 
     LEFT: 37,
     UP: 38,
@@ -82,16 +82,16 @@ let conf = {
     DOWN: 40,
     START_DIRECTION: 39,
 
-    DEFAULT_COLOR: "222",
-    FOOD_COLOR: "#423",
+    DEFAULT_COLOR: "#222",
+    FOOD_COLOR: "#090",
+    POISON_COLOR: "#900",
     START_SNAKE_X: 10,
     START_SNAKE_Y: 10,
     START_SNAKE_SIZE: 6,
-
     GAME_OVER: false,
     SHOW_DELAY: 100,
     getRandom: function (max) {
-        return Math.random() * max;
+        return Math.round(Math.random() * max);
     }
 };
 
@@ -102,48 +102,44 @@ class Canvas {
         this.canvasElement = document.createElement("canvas");
         this.canvasElement.id = "snake_canvas";
         document.body.appendChild(this.canvasElement);
-        this.canvasElement.width = conf.FIELD_WIDTH * conf.POINT + conf.POINT;
-        this.canvasElement.height = conf.FIELD_HEIGHT * conf.POINT + conf.POINT;
+        this.canvasElement.width = conf.FIELD_WIDTH * conf.POINT;
+        this.canvasElement.height = conf.FIELD_HEIGHT * conf.POINT;
     }
 
     context(context) {
         return this.canvasElement.getContext(context);
-
     }
 }
 
-
 class GameSnake {
-    constructor() {
-    }
-
     go() {
         let canvas = new Canvas();
         let ctx = canvas.context('2d');
-        console.log('DIRECTION ' + conf.START_DIRECTION);
-        let snake = new Snake(conf.START_SNAKE_X, conf.START_SNAKE_Y, conf.START_SNAKE_SIZE, conf.START_DIRECTION);
+        let food = new Food();
+        let poison = new Poison();
+        let snake = new Snake(food, poison);
         snake.paint(ctx);
 
         addEventListener("keydown", function (event) {
             snake.setDirection(event.keyCode);
-            console.log(event.keyCode);
         });
+        while (conf.GAME_OVER) {
+            setTimeout(() => {
 
-        let food = new Food();
+                snake.move(ctx);
 
-        setInterval(() => {
-            if (conf.GAME_OVER) {
-                return
-            }
-            snake.move(ctx);
-            food.next(ctx);
-        }, conf.SHOW_DELAY);
+                if (food.isEaten()) {
+                    food.next(ctx);
+                    poison.next(ctx);
+                }
 
-
+            }, conf.SHOW_DELAY);
+        }
     }
 }
 
 class Point {
+
     constructor(xq, yq) {
         this.setXY(xq, yq);
         this.color = conf.DEFAULT_COLOR;
@@ -155,7 +151,13 @@ class Point {
         graphics.beginPath();
         graphics.fillStyle = this.color;
         graphics.fillRect(this.x, this.y, conf.POINT, conf.POINT);
-        graphics.beginPath();
+    }
+
+    isYou(x, y, context) {
+        if ((this.x == x) && (this.y == y)) {
+
+            return this instanceof Point;
+        }
     }
 
     set y(variable) {
@@ -185,16 +187,20 @@ class Point {
 }
 
 class Snake {
-    constructor(x, y, length, direction) {
-        let i;
-        this.length = length;
+    constructor(food, poison) {
+        let i,
+            x = conf.START_SNAKE_X,
+            y = conf.START_SNAKE_Y;
+        this.length = conf.START_SNAKE_SIZE;
         this.snake = [];
+        this.direction = conf.START_DIRECTION;
+        this.graphics = {};
+        this.food = food;
+        this.poison = poison;
         for (i = 0; i < this.length; i += 1) {
             let point = new Point((x - i) * conf.POINT, y);
             this.snake.push(point);
         }
-        this.direction = direction;
-        this.graphics = {};
     }
 
     paint(graphics) {
@@ -231,64 +237,87 @@ class Snake {
             x = 0;
         }
         if (x < 0) {
-            x = conf.FIELD_WIDTH * conf.POINT - 1;
+            x = conf.FIELD_WIDTH * conf.POINT;
         }
-        if (y > conf.FIELD_HEIGHT * conf.POINT - 1) {
+        if (y > conf.FIELD_HEIGHT * conf.POINT) {
             y = 0;
         }
         if (y < 0) {
-            y = conf.FIELD_HEIGHT * conf.POINT - 1;
+            y = conf.FIELD_HEIGHT * conf.POINT;
+        }
+        conf.GAME_OVER = this.isInsideSnake(x, y);
+
+
+        if (this.food.isYou(x, y)) {
+            this.food.eat();
+        } else {
+            this.removeTail();
+        }
+
+        if (this.poison.isYou(x, y)) {
+            console.log('GAME_OVER');
+            conf.GAME_OVER = true;
         }
 
         this.snake.unshift(new Point(x, y));
-        this.removeTail();
-        console.log('move ' + this.snake.length);
-        this.paint(this.graphics);
 
+        this.paint(this.graphics);
     }
 
     removeTail() {
-        this.snake[this.length].clear();
-        this.snake.pop(this.snake[this.length]);
+        let snakeLength = this.snake.length - 1;
+        this.snake[snakeLength].clear();
+        this.snake.pop(snakeLength);
     }
 
     isInsideSnake(x, y) {
+        let inside = false;
         this.snake.forEach((point) => {
-            if ((point.x() == x) && (point.x() == y)) {
-                return true;
+            if (point.isYou(x, y)) {
+                inside = true;
             }
         });
-        return false;
+        return inside;
     }
-    isFood(food) {
-    return ((this.snake[0].x == food.x) && (this.snake[0].x == food.y));
-}
 
 }
 
 class Food extends Point {
     constructor() {
-        super(-1, -1);
+        super(-100, -100);
         this.color = conf.FOOD_COLOR;
     }
 
     eat() {
-        this.setXY(-1, -1);
+        this.clear();
+        this.setXY(-100, -100);
     }
 
     isEaten() {
-        return this.x() == -1;
+        return this.x == -100;
     }
 
     next(graphics) {
-        let x,
-            y;
-            x = conf.getRandom(conf.FIELD_WIDTH * conf.POINT) / conf.POINT ;
-            y = conf.getRandom(conf.FIELD_HEIGHT* conf.POINT) / conf.POINT ;
+        let x = conf.getRandom(conf.FIELD_WIDTH) * conf.POINT;
+        let y = conf.getRandom(conf.FIELD_HEIGHT) * conf.POINT;
         this.setXY(x, y);
         this.paint(graphics)
     }
 }
 
+class Poison extends Point {
+    constructor() {
+        super(-1, -1);
+        this.color = conf.POISON_COLOR;
+    }
 
-new GameSnake().go();
+    next(graphics) {
+        let x = conf.getRandom(conf.FIELD_WIDTH) * conf.POINT;
+        let y = conf.getRandom(conf.FIELD_HEIGHT) * conf.POINT;
+        this.setXY(x, y);
+        this.paint(graphics)
+    }
+}
+
+var snake = new GameSnake();
+snake.go();

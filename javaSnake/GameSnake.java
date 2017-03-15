@@ -108,7 +108,7 @@ public class GameSnake {
             if (x < 0) { x = FIELD_WIDTH - 1; }
             if (y > FIELD_HEIGHT - 1) { y = 0; }
             if (y < 0) { y = FIELD_HEIGHT - 1; }
-            gameOver = isInsideSnake(x, y); // check for acrooss itselves
+            gameOver = isInsideSnake(x, y);
             snake.add(0, new Point(x, y));
             if (isFood(food)) {
                 food.eat();
