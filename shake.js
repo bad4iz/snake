@@ -123,7 +123,8 @@ class GameSnake {
         addEventListener("keydown", function (event) {
             snake.setDirection(event.keyCode);
         });
-        while (conf.GAME_OVER) {
+        while (!conf.GAME_OVER) {
+            console.log("sdfs");
             setTimeout(() => {
 
                 snake.move(ctx);
