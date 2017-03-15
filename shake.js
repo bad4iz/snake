@@ -73,23 +73,26 @@
 
 let conf = {
     POINT: 10, // in pix
-    FIELD_WIDTH: 300, // in point
-    FIELD_HEIGHT: 200, // in point
+    FIELD_WIDTH: 100, // in point
+    FIELD_HEIGHT: 50, // in point
 
     LEFT: 37,
     UP: 38,
     RIGHT: 39,
     DOWN: 40,
+    START_DIRECTION: 39,
 
-    START_DIRECTION: this.RIGHT,
     DEFAULT_COLOR: "222",
     FOOD_COLOR: "#423",
     START_SNAKE_X: 10,
     START_SNAKE_Y: 10,
     START_SNAKE_SIZE: 6,
 
-
-    GAME_OVER: false
+    GAME_OVER: false,
+    SHOW_DELAY: 100,
+    getRandom: function (max) {
+        return Math.random() * max;
+    }
 };
 
 
@@ -112,28 +115,30 @@ class Canvas {
 
 class GameSnake {
     constructor() {
-
-        // const START_LOCATION = 200;
-
-        // const SHOW_DELAY = 150;
-
     }
 
     go() {
-        addEventListener("keydown", function (event) {
-            console.log(event.keyCode);
-        });
         let canvas = new Canvas();
         let ctx = canvas.context('2d');
-
+        console.log('DIRECTION ' + conf.START_DIRECTION);
         let snake = new Snake(conf.START_SNAKE_X, conf.START_SNAKE_Y, conf.START_SNAKE_SIZE, conf.START_DIRECTION);
         snake.paint(ctx);
 
-        setInterval( ()=> {
-                snake.move();
-            snake.paint(ctx);
+        addEventListener("keydown", function (event) {
+            snake.setDirection(event.keyCode);
+            console.log(event.keyCode);
+        });
 
-        }, 1000)
+        let food = new Food();
+
+        setInterval(() => {
+            if (conf.GAME_OVER) {
+                return
+            }
+            snake.move(ctx);
+            food.next(ctx);
+        }, conf.SHOW_DELAY);
+
 
     }
 }
@@ -142,9 +147,11 @@ class Point {
     constructor(xq, yq) {
         this.setXY(xq, yq);
         this.color = conf.DEFAULT_COLOR;
+        this.graphics = {};
     }
 
     paint(graphics) {
+        this.graphics = graphics;
         graphics.beginPath();
         graphics.fillStyle = this.color;
         graphics.fillRect(this.x, this.y, conf.POINT, conf.POINT);
@@ -152,11 +159,11 @@ class Point {
     }
 
     set y(variable) {
-        this._y = variable * conf.POINT;
+        this._y = variable;
     }
 
     set x(variable) {
-        this._x = variable * conf.POINT;
+        this._x = variable;
     }
 
     get x() {
@@ -172,9 +179,9 @@ class Point {
         this.y = yq;
     }
 
-    // clear(graphics){
-    //     graphics.clear(this.x, this.y, conf.POINT, conf.POINT);
-    // }
+    clear() {
+        this.graphics.clearRect(this.x, this.y, conf.POINT, conf.POINT);
+    }
 }
 
 class Snake {
@@ -183,33 +190,103 @@ class Snake {
         this.length = length;
         this.snake = [];
         for (i = 0; i < this.length; i += 1) {
-            let point = new Point(x - i, y);
+            let point = new Point((x - i) * conf.POINT, y);
             this.snake.push(point);
         }
         this.direction = direction;
+        this.graphics = {};
     }
 
     paint(graphics) {
         this.snake.forEach((point) => point.paint(graphics))
     }
 
-    move() {
+    setDirection(direction) {
+        if ((direction >= conf.LEFT) && (direction <= conf.DOWN)) {
+            if (Math.abs(this.direction - direction) != 2) {
+                this.direction = direction;
+            }
+        }
+    }
+
+    move(graphics) {
+        this.graphics = graphics;
         let x = this.snake[0].x;
         let y = this.snake[0].y;
-        // if (this.direction == conf.LEFT) { x--; }
-        // if (this.direction == conf.RIGHT) { x++; }
-        // if (this.direction == conf.UP) { y--; }
-        // if (this.direction == conf.DOWN) { y++; }
-        x++;
-        this.snake.push(new Point(x, y));
-        console.log('move sdfasdfsdf' + x);
+
+        if (this.direction == conf.LEFT) {
+            x -= conf.POINT;
+        }
+        if (this.direction == conf.RIGHT) {
+            x += conf.POINT;
+        }
+        if (this.direction == conf.UP) {
+            y -= conf.POINT;
+        }
+        if (this.direction == conf.DOWN) {
+            y += conf.POINT;
+        }
+
+        if (x > conf.FIELD_WIDTH * conf.POINT) {
+            x = 0;
+        }
+        if (x < 0) {
+            x = conf.FIELD_WIDTH * conf.POINT - 1;
+        }
+        if (y > conf.FIELD_HEIGHT * conf.POINT - 1) {
+            y = 0;
+        }
+        if (y < 0) {
+            y = conf.FIELD_HEIGHT * conf.POINT - 1;
+        }
+
+        this.snake.unshift(new Point(x, y));
+        this.removeTail();
+        console.log('move ' + this.snake.length);
+        this.paint(this.graphics);
+
     }
+
+    removeTail() {
+        this.snake[this.length].clear();
+        this.snake.pop(this.snake[this.length]);
+    }
+
+    isInsideSnake(x, y) {
+        this.snake.forEach((point) => {
+            if ((point.x() == x) && (point.x() == y)) {
+                return true;
+            }
+        });
+        return false;
+    }
+    isFood(food) {
+    return ((this.snake[0].x == food.x) && (this.snake[0].x == food.y));
+}
+
 }
 
 class Food extends Point {
     constructor() {
         super(-1, -1);
         this.color = conf.FOOD_COLOR;
+    }
+
+    eat() {
+        this.setXY(-1, -1);
+    }
+
+    isEaten() {
+        return this.x() == -1;
+    }
+
+    next(graphics) {
+        let x,
+            y;
+            x = conf.getRandom(conf.FIELD_WIDTH * conf.POINT) / conf.POINT ;
+            y = conf.getRandom(conf.FIELD_HEIGHT* conf.POINT) / conf.POINT ;
+        this.setXY(x, y);
+        this.paint(graphics)
     }
 }
 
