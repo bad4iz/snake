@@ -42,7 +42,9 @@ class Canvas {
         return this.canvasElement.getContext(context);
     }
 }
-
+/**
+ * игра
+ */
 class GameSnake {
     go() {
         let canvas = new Canvas();
