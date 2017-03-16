@@ -118,7 +118,9 @@ class Point {
     }
 
 }
-
+/**
+ * змея
+ */
 class Snake {
     constructor(food, poisons) {
         let i,
