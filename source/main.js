@@ -1,11 +1,11 @@
 /**
-* Created by bad4iz on 14.03.2017.
-*/
+ * Created by bad4iz on 14.03.2017.
+ */
 
-let conf = {
+const conf = {
     POINT: 10, // in pix
-    FIELD_WIDTH: 100, // in point
-    FIELD_HEIGHT: 30, // in point
+    FIELD_WIDTH: Math.floor(window.screen.availWidth / conf.POINT), // in point
+    FIELD_HEIGHT: Math.floor(window.screen.availHeight / conf.POINT), // in point
 
     LEFT: 37,
     UP: 38,
@@ -171,9 +171,9 @@ class Snake {
         let x = this.snake[0].x;
         let y = this.snake[0].y;
 
-        [x,y] = this.getDirection(x, y); // деструктивное присваивание координат следующего шага
+        [x, y] = this.getDirection(x, y); // деструктивное присваивание координат следующего шага
 
-        conf.GAME_OVER = this.isInsideSnake(x, y) || this.isInsidePoison(x, y) ;
+        conf.GAME_OVER = this.isInsideSnake(x, y) || this.isInsidePoison(x, y);
 
         if (this.food.isYou(x, y)) { // это еда
             this.food.eat();
@@ -232,7 +232,7 @@ class Snake {
      * @param y
      * @returns {[x,y]}
      */
-    getDirection(x,y){
+    getDirection(x, y) {
         if (this.direction == conf.LEFT) {
             x -= conf.POINT;
         }
@@ -258,7 +258,7 @@ class Snake {
         if (y < 0) {
             y = conf.FIELD_HEIGHT * conf.POINT;
         }
-        return[x,y];
+        return [x, y];
     }
 
 }
