@@ -1,11 +1,12 @@
 /**
  * Created by bad4iz on 14.03.2017.
  */
+const POINT = 20;
 
 const conf = {
-    POINT: 10, // in pix
-    FIELD_WIDTH: Math.floor(window.screen.availWidth / conf.POINT), // in point
-    FIELD_HEIGHT: Math.floor(window.screen.availHeight / conf.POINT), // in point
+    POINT: POINT, // in pix
+    FIELD_WIDTH: Math.floor(document.documentElement.clientWidth  / POINT), // in point
+    FIELD_HEIGHT: Math.floor(document.documentElement.clientHeight  / POINT ), // in point
 
     LEFT: 37,
     UP: 38,
@@ -36,6 +37,9 @@ class Canvas {
         document.body.appendChild(this.canvasElement);
         this.canvasElement.width = conf.FIELD_WIDTH * conf.POINT;
         this.canvasElement.height = conf.FIELD_HEIGHT * conf.POINT;
+        this.canvasElement.style.position = 'fixed';
+        this.canvasElement.style.top = '0';
+        this.canvasElement.style.left = '0';
     }
 
     context(context) {
